@@ -1,11 +1,12 @@
 import {useContext, useEffect, useState} from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useForm } from 'react-hook-form'
 import axios from 'axios';
 
 function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { handleSubmit, register } = useForm();
+
   const [error, toggleError] = useState(false);
   const { login } = useContext(AuthContext);
 
@@ -18,14 +19,13 @@ function SignIn() {
     }
   }, []);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function onSubmit(data) {
     toggleError(false);
 
     try {
       const result = await axios.post('http://localhost:3000/login', {
-        email: email,
-        password: password,
+        email: data.email,
+        password: data.password
       },{
         cancelToken: source.token,
       });
@@ -46,15 +46,13 @@ function SignIn() {
         <h1>Inloggen</h1>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab alias cum debitis dolor dolore fuga id molestias qui quo unde?</p>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <label htmlFor="email-field">
             Emailadres:
             <input
                 type="email"
                 id="email-field"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
             />
           </label>
 
@@ -63,9 +61,7 @@ function SignIn() {
             <input
                 type="password"
                 id="password-field"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password")}
             />
           </label>
           {error && <p className="error">Combinatie van emailadres en wachtwoord is onjuist</p>}

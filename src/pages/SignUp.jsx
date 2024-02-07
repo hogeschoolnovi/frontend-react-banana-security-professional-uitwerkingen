@@ -1,16 +1,16 @@
 import {useEffect, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form'
 import axios from 'axios';
 
 function SignUp() {
-  // state voor het formulier
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  // hookform voor het formulier
+  const { handleSubmit, register } = useForm();
 
   // state voor functionaliteit
   const [error, toggleError] = useState(false);
   const [loading, toggleLoading] = useState(false);
+
   const navigate = useNavigate();
 
   // we maken een canceltoken aan voor ons netwerk-request
@@ -23,24 +23,21 @@ function SignUp() {
     }
   }, []);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function onSubmit(data) {
+    console.log(data)
     toggleError(false);
     toggleLoading(true);
 
     try {
       await axios.post('http://localhost:3000/register', {
-        email: email,
-        password: password,
-        username: username,
+        email: data.email,
+        username: data.username,
+        password: data.password
       },{
         cancelToken: source.token,
       });
 
-      // Let op: omdat we geen axios Canceltoken gebruiken zul je hier een memory-leak melding krijgen.
-      // Om te zien hoe je een canceltoken implementeerd kun je de bonus-branch bekijken!
-
-      // als alles goed gegaan is, linken we dyoor naar de login-pagina
+      // als alles goed gegaan is, linken we door naar de login-pagina
       navigate('/signin');
     } catch(e) {
       console.error(e);
@@ -57,15 +54,13 @@ function SignUp() {
           harum, numquam, placeat quisquam repellat rerum suscipit ullam vitae. A ab ad assumenda, consequuntur deserunt
           doloremque ea eveniet facere fuga illum in numquam quia reiciendis rem sequi tenetur veniam?
         </p>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <label htmlFor="email-field">
             Emailadres:
             <input
                 type="email"
                 id="email-field"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
             />
           </label>
 
@@ -74,8 +69,7 @@ function SignUp() {
             <input
                 type="text"
                 id="username-field"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                {...register("username")}
             />
           </label>
 
@@ -84,9 +78,7 @@ function SignUp() {
             <input
                 type="password"
                 id="password-field"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password")}
             />
           </label>
           {error && <p className="error">Dit account bestaat al. Probeer een ander emailadres.</p>}

@@ -34,7 +34,6 @@ function Profile() {
         return function cleanup() {
             source.cancel();
         }
-
     }, [])
 
     return (
