@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import {useContext, useEffect, useState} from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
@@ -9,6 +9,15 @@ function SignIn() {
   const [error, toggleError] = useState(false);
   const { login } = useContext(AuthContext);
 
+  const source = axios.CancelToken.source();
+
+  // mocht onze pagina ge-unmount worden voor we klaar zijn met data ophalen, aborten we het request
+  useEffect(() => {
+    return function cleanup() {
+      source.cancel();
+    }
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     toggleError(false);
@@ -17,6 +26,8 @@ function SignIn() {
       const result = await axios.post('http://localhost:3000/login', {
         email: email,
         password: password,
+      },{
+        cancelToken: source.token,
       });
       // log het resultaat in de console
       console.log(result.data);

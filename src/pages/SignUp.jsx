@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -13,6 +13,16 @@ function SignUp() {
   const [loading, toggleLoading] = useState(false);
   const navigate = useNavigate();
 
+  // we maken een canceltoken aan voor ons netwerk-request
+  const source = axios.CancelToken.source();
+
+  // mocht onze pagina ge-unmount worden voor we klaar zijn met data ophalen, aborten we het request
+  useEffect(() => {
+    return function cleanup() {
+      source.cancel();
+    }
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     toggleError(false);
@@ -23,6 +33,8 @@ function SignUp() {
         email: email,
         password: password,
         username: username,
+      },{
+        cancelToken: source.token,
       });
 
       // Let op: omdat we geen axios Canceltoken gebruiken zul je hier een memory-leak melding krijgen.
